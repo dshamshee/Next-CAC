@@ -14,13 +14,24 @@ export async function GET(request: Request){
 
     try {
         const {searchParams} = new URL(request.url)
+
+        const rawUsername = searchParams.get("username")
+        
+        
+        // Early validation for malformed requests
+        if (!rawUsername || typeof rawUsername !== 'string') {
+            return Response.json({
+                success: false,
+                message: "Username parameter is required"
+            }, {status: 400})
+        }
+
         const queryParam = {
-            username: searchParams.get("username")
+            username: rawUsername
         }
 
         // Validate with Zod
         const result = UsernameQuerySchema.safeParse(queryParam)
-        console.log(result)
 
         if(!result.success){
             const usernameErrors = result.error.format().username?._errors || []
