@@ -10,19 +10,24 @@ export const authOptions: NextAuthOptions = {
       id: "credentials",
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "text" },
+        identifier: { label: "Email/Username", type: "text" },
         password: { label: "Password", type: "password" }
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      async authorize(credentials: any, req: any): Promise<any>{
+      async authorize(credentials: any): Promise<any>{
         await dbConnect();
-
+        
+        if (!credentials?.identifier || !credentials?.password) {
+          throw new Error("Missing credentials");
+        }
+        
+        console.log("Received identifier:", credentials.identifier)
         try {
-
+            // Search for user by email or username
             const user = await UserModel.findOne({
                 $or:[
-                    {email: credentials.identifier.email},
-                    {username: credentials.identifier.username},
+                    {email: credentials.identifier},
+                    {username: credentials.identifier},
                 ]
             })
 
@@ -36,6 +41,7 @@ export const authOptions: NextAuthOptions = {
 
 
             const isPasswordCorrect = await bcrypt.compare(credentials.password, user.password)
+            console.log("checking correct password", isPasswordCorrect)
             if(isPasswordCorrect){
                return user; 
             }else{
@@ -56,7 +62,7 @@ export const authOptions: NextAuthOptions = {
         if(user){
             token._id = user._id?.toString();
             token.isVerified = user.isVerified;
-            token.isAcceptingMessages = user.isAcceptingMessages;
+            token.isAcceptingMessages = user.isAcceptingMessage;
             token.username = user.username;
         }
 

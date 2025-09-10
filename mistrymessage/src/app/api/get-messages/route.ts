@@ -6,11 +6,14 @@ import { User } from "next-auth";
 import mongoose from "mongoose";
 
 
-export async function GET(request: Request){
+export async function GET(){
     await dbConnect();
     
     const session = await getServerSession(authOptions)
     const user: User = session?.user as User
+    
+    // console.log("Session:", session)
+    // console.log("User from session:", user)
 
     if(!session || !session.user){
         return Response.json({
@@ -20,27 +23,45 @@ export async function GET(request: Request){
     }
 
     const userId = new mongoose.Types.ObjectId(user._id)
+    // console.log("Looking for user with ID:", userId)
     try {
-        const user = await UserModel.aggregate([
-            {$match: {id: userId}},
-            {$unwind: "$messages"},
-            {$sort: {"messages.createdAt": -1}},
-            {$group: {_id: "$_id", messages: {$push: "$messages"}}}
-        ])
-
-
-        if(!user || user.length === 0 ){
+        // First check if user exists
+        const userExists = await UserModel.findById(userId)
+        if (!userExists) {
             return Response.json({
                 success: false,
                 message: "User not found"
-            }, {status: 401})
+            }, {status: 404})
         }
 
+        // Use aggregation to get sorted messages, but handle case where user has no messages
+        const result = await UserModel.aggregate([
+            {$match: {_id: userId}},
+            {
+                $addFields: {
+                    messages: {
+                        $cond: {
+                            if: { $eq: [{ $size: "$messages" }, 0] },
+                            then: [],
+                            else: {
+                                $sortArray: {
+                                    input: "$messages",
+                                    sortBy: { "createdAt": -1 }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {$project: { messages: 1 }}
+        ])
+        
+        // console.log("Aggregation result:", result)
 
         return Response.json({
             success: true,
-            messages: user[0].messages
-        }, {status: 401})
+            messages: result[0]?.messages || []
+        }, {status: 200})
 
 
     } catch (error) {

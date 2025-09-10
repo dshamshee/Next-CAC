@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { signInSchema } from "@/schemas/signInSchema";
 import { signIn } from "next-auth/react";
 
+
 const SignInPage = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,6 +50,7 @@ const SignInPage = () => {
        identifier: data.identifier,
        password: data.password
      })
+     console.log("response", response)
  
      if(response?.error){
        toast.error("Invalid Credentials",{

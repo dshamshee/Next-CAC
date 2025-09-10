@@ -44,11 +44,13 @@ const MessageCard = ({message, onMessageDelete}: MessageCardProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Card Title</CardTitle>
+        <div className="flex items-center gap-2">
+
+        <CardTitle className="flex-1 font-bold text-xl">{message.content}</CardTitle>
 
         <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="destructive"><X className="w-5 h-5"/></Button>
+      <AlertDialogTrigger asChild >
+        <Button variant="destructive" className="w-10 h-10 cursor-pointer"><X className="w-4 h-4"/></Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -64,9 +66,10 @@ const MessageCard = ({message, onMessageDelete}: MessageCardProps) => {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+    </div>
 
-        <CardDescription>Card Description</CardDescription>
-        <CardAction>Card Action</CardAction>
+        <CardDescription className="font-semibold">{new Date(message.createdAt).toLocaleString()}</CardDescription>
+        {/* <CardAction>Card Action</CardAction> */}
       </CardHeader>
       <CardContent>
       </CardContent>
