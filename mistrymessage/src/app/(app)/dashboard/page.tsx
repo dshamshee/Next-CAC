@@ -91,7 +91,7 @@ const DashboardPage = ()=>{
 
   // Do more research on this functionality 
   // const baseUrl = `${window.location.protocol}//${window.location.host}`
-  const baseUrl = 'http://localhost:3000'
+  const baseUrl = 'https://next-cac.vercel.app'
 
   const profileUrl = `${baseUrl}/u/${username}`
 
