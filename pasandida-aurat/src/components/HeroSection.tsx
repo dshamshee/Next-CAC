@@ -1,10 +1,9 @@
-import { div } from "motion/react-client";
+
 import CircularGallery from "./bits/CircularGallery";
 import SplitText from "./bits/SplitText";
 import { BackgroundBeamsWithCollision } from "./ui/background-beams-with-collision";
 import { InfiniteMovingCards } from "./ui/infinite-moving-cards";
-import Image from "next/image";
-import { WavyBackground } from "./ui/wavy-background";
+
 
 
 const images = [
