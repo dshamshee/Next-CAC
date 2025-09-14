@@ -8,6 +8,9 @@ const publicPaths = [
   "/auth/signin",
   "/auth/error",
   "/login",
+  // '/',
+  '/signup',
+  '/verifyemail',
   /^\/report\/[^/]+$/, // Matches /report/<id> where <id> can be any string
 ];
 
@@ -19,6 +22,7 @@ export async function middleware(request: NextRequest) {
     typeof path === "string" ? path === pathname : path.test(pathname)
   );
 
+  // If the path is public, then return next and allow the request to continue
   if (isPublicPath) {
     return NextResponse.next();
   }
@@ -27,10 +31,12 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request });
 
 
+  // If the path is not public, then check for authentication token and if not found, then redirect to login page
   if (!token) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
+  // If the path is not public and the authentication token is found, then allow the request to continue
   return NextResponse.next();
 }
 
@@ -45,5 +51,11 @@ export const config = {
      * - public folder
      */
     "/((?!_next/static|_next/image|favicon.ico|public|.*\\..*|api/auth).*)",
+    '/auth/signin',
+    '/auth/error',
+    '/login',
+    '/',
+    '/signup',
+    '/verifyemail',
   ],
 };
