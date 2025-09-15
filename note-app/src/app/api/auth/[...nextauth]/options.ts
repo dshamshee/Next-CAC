@@ -1,6 +1,6 @@
 import dbConnect from "@/lib/dbConnections";
 import UserModel from "@/models/User";
-import { getServerSession, NextAuthOptions } from "next-auth";
+import { getServerSession, NextAuthOptions, User } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
 
@@ -15,8 +15,7 @@ export const authOptions: NextAuthOptions = {
     ],
     
     callbacks:{
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        async signIn({user}: {user: any}){
+        async signIn({user}: {user: User}){
             console.log(user);
             await dbConnect();
             let existingUser = await UserModel.findOne({email: user.email});
@@ -34,17 +33,16 @@ export const authOptions: NextAuthOptions = {
             return true;
         },
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        async session ({session, token}: {session: any, token: any}){
+        async session ({session, token}){
             
             if(token?.email){
                 const loggedInUser = await UserModel.findOne({email: token.email});
 
                 if(loggedInUser && session.user){
-                    session.user._id = loggedInUser._id?.toString() || "";
+                    session.user.id = loggedInUser._id.toString();
                     session.user.name = loggedInUser.name;
                     session.user.email = loggedInUser.email;
-                    session.user.avatar = loggedInUser.avatar || "";
+                    session.user.avatar = loggedInUser.avatar;
                 }
             }
             return Promise.resolve(session);

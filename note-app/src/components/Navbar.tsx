@@ -6,9 +6,12 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { FaEnvelope, FaPlus } from "react-icons/fa";
 import { LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
+
 
 export const Navbar = ({ className }: { className?: string })=>{
     const [active, setActive] = useState<string | null>(null);
+    const router = useRouter();
 
 
     return(
@@ -27,7 +30,7 @@ export const Navbar = ({ className }: { className?: string })=>{
                 </HoveredLink>
 
                 {/* Our Courses */}
-                <Button className="w-8 h-8 cursor-pointer hover:text-green-500 font-bold" variant="outline">
+                <Button onClick={()=> router.push("/addnote")} className="w-8 h-8 cursor-pointer hover:text-green-500 font-bold" variant="outline">
                     <FaPlus />
                 </Button>
 
