@@ -5,17 +5,19 @@ import NoteModel from "@/models/Note";
 
 
 export async function GET(request: NextRequest){
+    console.log("i am calling")
     await dbConnect();
 
     try {
         const session = await GetServerSessionHere();
         const user = session?.user;
+        console.log("User ID: ", user?.id);
         if(!session || !user) return NextResponse.json({
             success: false,
             message: "Not Authenticated"
         }, {status: 401})
 
-        const notes = await NoteModel.find({userId: user.id});
+        const notes = await NoteModel.find({userId: user?.id});
         return NextResponse.json({
             success: true,
             message: "Notes fetched successfully",

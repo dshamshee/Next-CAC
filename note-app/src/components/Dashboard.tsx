@@ -4,52 +4,29 @@ import { Button } from "@/components/ui/button";
 import { Note } from "@/schemas/NoteSchema";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { toast } from "sonner";
 
-// import DashboardPage from "@/components/Dashboard"
 
 
 
 
+const DashboardPage = ({notes}: {notes: Note[]}) => {
 
-const DashboardPage = () => {
-  const [notes, setNotes] = useState<Note[]>([])
-  const [isLoading, setIsLoading] = useState(false);
+      const [allNotes, setAllNotes] = useState<Note[]>([])
+  const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false)
-  const {data: session} = useSession();
-
 
   useEffect(()=>{
+    setIsLoading(true)
+    setAllNotes(notes)
+    setIsLoading(false)
+  }, [notes])
 
-    const fetchNotes = async()=>{
-      setIsLoading(true);
   
-      try {
-        if(!session || !session.user) return;
-        const response = await axios.get('/api/getnotes');
-        if(response.data.success){
-          setNotes(response.data.notes || []);
-          console.log("data fetched successfully");
-          toast.success(response.data.message)
-        }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: any) {
-        toast.error(error.message)
-        console.log("something")
-      }finally{
-        setIsLoading(false);
-      }
-    }
-
-    // console.log("fetching notes")
-    fetchNotes();
-  }, [session])
 
 
-  // console.log(notes?.[0]._id); 
 
   const handleNoteDelete = async(noteId: string)=>{
     setIsDeleting(true)
@@ -57,7 +34,7 @@ const DashboardPage = () => {
       const response = await axios.delete(`/api/deleteNote/${noteId}`)
       if(response.data.success){
         toast.success(response.data.message)
-        setNotes(notes.filter((note)=> note._id !== noteId))
+        setAllNotes(allNotes.filter((note)=> note._id !== noteId))
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -76,13 +53,76 @@ const DashboardPage = () => {
     )
   }
 
-  if(notes.length === 0){
+  if(allNotes.length === 0){
     return(
       <div className="mainContainer w-screen h-screen flex justify-center items-center pt-36 md:px-20 px-5 min-h-screen bg-neutral-950 antialiased bg-grid-white/[0.02]">
         <p className="text-white text-2xl font-bold">No notes found</p>
       </div>
     )
   }
+
+
+  // useEffect(()=>{
+
+  //   const fetchNotes = async()=>{
+  //     setIsLoading(true);
+  
+  //     try {
+  //       if(!session || !session.user) return;
+  //       const response = await axios.get('/api/getnotes');
+  //       if(response.data.success){
+  //         setNotes(response.data.notes || []);
+  //         console.log("data fetched successfully");
+  //         toast.success(response.data.message)
+  //       }
+  //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  //     } catch (error: any) {
+  //       toast.error(error.message)
+  //       console.log("something")
+  //     }finally{
+  //       setIsLoading(false);
+  //     }
+  //   }
+
+  //   // console.log("fetching notes")
+  //   fetchNotes();
+  // }, [session])
+
+
+  // // console.log(notes?.[0]._id); 
+
+  // const handleNoteDelete = async(noteId: string)=>{
+  //   setIsDeleting(true)
+  //   try {
+  //     const response = await axios.delete(`/api/deleteNote/${noteId}`)
+  //     if(response.data.success){
+  //       toast.success(response.data.message)
+  //       setNotes(notes.filter((note)=> note._id !== noteId))
+  //     }
+  //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  //   } catch (error: any) {
+  //     toast.error(error.message)
+  //   } finally {
+  //     setIsDeleting(false)
+  //   }
+  // }
+
+
+  // if(isLoading){
+  //   return(
+  //     <div className="mainContainer w-screen h-screen flex justify-center items-center pt-36 md:px-20 px-5 min-h-screen bg-neutral-950 antialiased bg-grid-white/[0.02]">
+  //       <Loader2 className="w-4 h-4 animate-spin" />
+  //     </div>
+  //   )
+  // }
+
+  // if(notes.length === 0){
+  //   return(
+  //     <div className="mainContainer w-screen h-screen flex justify-center items-center pt-36 md:px-20 px-5 min-h-screen bg-neutral-950 antialiased bg-grid-white/[0.02]">
+  //       <p className="text-white text-2xl font-bold">No notes found</p>
+  //     </div>
+  //   )
+  // }
 
 
   return (
@@ -94,7 +134,7 @@ const DashboardPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
 
         {
-          notes.map((note)=>{
+          allNotes.map((note)=>{
             return(
         <SpotlightCard
         key={note._id as string}
@@ -166,92 +206,3 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
-
-
-
-// const HomePage = async ()=>{
-
-//   const response = await axios.get('http://localhost:3000/api/getnotes');
-//   let notes: Note[] = [];
-//   console.log("response", response.data)
-//   if(response.data.success){
-//     notes = response.data.notes || [];
-//   }
-
-
-//   //   const [notes, setNotes] = useState<Note[]>([])
-//   // const [isLoading, setIsLoading] = useState(false);
-//   // const [isDeleting, setIsDeleting] = useState(false)
-//   // const {data: session} = useSession();
-
-
-//   // useEffect(()=>{
-
-//   //   const fetchNotes = async()=>{
-//   //     setIsLoading(true);
-  
-//   //     try {
-//   //       if(!session || !session.user) return;
-//   //       const response = await axios.get('http://localhost:3000/api/getnotes');
-//   //       if(response.data.success){
-//   //         setNotes(response.data.notes || []);
-//   //         console.log("data fetched successfully");
-//   //         toast.success(response.data.message)
-//   //       }
-//   //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//   //     } catch (error: any) {
-//   //       toast.error(error.message)
-//   //       console.log("something")
-//   //     }finally{
-//   //       setIsLoading(false);
-//   //     }
-//   //   }
-
-//   //   // console.log("fetching notes")
-//   //   fetchNotes();
-//   // }, [session])
-
-
-//   // console.log(notes?.[0]._id); 
-
-//   // const handleNoteDelete = async(noteId: string)=>{
-//   //   setIsDeleting(true)
-//   //   try {
-//   //     const response = await axios.delete(`/api/deleteNote/${noteId}`)
-//   //     if(response.data.success){
-//   //       toast.success(response.data.message)
-//   //       setNotes(notes.filter((note)=> note._id !== noteId))
-//   //     }
-//   //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//   //   } catch (error: any) {
-//   //     toast.error(error.message)
-//   //   } finally {
-//   //     setIsDeleting(false)
-//   //   }
-//   // }
-
-
-//   // if(isLoading){
-//   //   return(
-//   //     <div className="mainContainer w-screen h-screen flex justify-center items-center pt-36 md:px-20 px-5 min-h-screen bg-neutral-950 antialiased bg-grid-white/[0.02]">
-//   //       <Loader2 className="w-4 h-4 animate-spin" />
-//   //     </div>
-//   //   )
-//   // }
-
-//   // if(notes.length === 0){
-//   //   return(
-//   //     <div className="mainContainer w-screen h-screen flex justify-center items-center pt-36 md:px-20 px-5 min-h-screen bg-neutral-950 antialiased bg-grid-white/[0.02]">
-//   //       <p className="text-white text-2xl font-bold">No notes found</p>
-//   //     </div>
-//   //   )
-//   // }
-
-//   return(
-//     <>
-//     <DashboardPage notes={notes} />
-//     </>
-//   )
-// }
-
-// export default HomePage;

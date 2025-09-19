@@ -1,61 +1,55 @@
 import type { NextRequest } from "next/server";
-
+export { default } from "next-auth/middleware"
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 
 // Define paths that don't require authentication
-const publicPaths = [
-  "/auth/signin",
-  "/auth/error",
-  "/login",
-  // '/',
-  '/signup',
-  '/verifyemail',
-  /^\/report\/[^/]+$/, // Matches /report/<id> where <id> can be any string
-];
+// const publicPaths = [
+//   "/auth/signin",
+//   "/auth/error",
+//   "/login",
+//   // "/testing",
+//   // '/',
+//   '/signup',
+//   '/verifyemail',
+//   /^\/report\/[^/]+$/, // Matches /report/<id> where <id> can be any string
+// ];
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const token = await getToken({req: request})
+  const url = request.nextUrl;
 
-  // Check if the path is public
-  const isPublicPath = publicPaths.some((path) =>
-    typeof path === "string" ? path === pathname : path.test(pathname)
-  );
+  // Define public paths that don't require authentication
+  const publicPaths = ['/login', '/signup', '/api/auth'];
+  const isPublicPath = publicPaths.some(path => url.pathname.startsWith(path));
 
-  // If the path is public, then return next and allow the request to continue
-  if (isPublicPath) {
-    return NextResponse.next();
+  // If user is authenticated and tries to access login/signup, redirect to home
+  if(token && 
+      (
+          url.pathname.startsWith('/login') ||
+          url.pathname.startsWith('/signup')
+      )
+  ){
+      return NextResponse.redirect(new URL('/', request.url))
   }
 
-  // Check for authentication token
-  const token = await getToken({ req: request });
-
-
-  // If the path is not public, then check for authentication token and if not found, then redirect to login page
-  if (!token) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  // If user is not authenticated and tries to access protected paths, redirect to login
+  if(!token && !isPublicPath){
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // If the path is not public and the authentication token is found, then allow the request to continue
+  // Allow the request to continue
   return NextResponse.next();
 }
 
-// Configure which routes to run middleware on
+// See "Matching Paths" below to learn more
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    "/((?!_next/static|_next/image|favicon.ico|public|.*\\..*|api/auth).*)",
-    '/auth/signin',
-    '/auth/error',
-    '/login',
     '/',
+    '/login',
     '/signup',
-    '/verifyemail',
+    '/testing',
+    '/addnote',
+    // Add other protected routes here as needed
   ],
 };
