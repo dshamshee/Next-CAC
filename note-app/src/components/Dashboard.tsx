@@ -4,9 +4,22 @@ import { Button } from "@/components/ui/button";
 import { Note } from "@/schemas/NoteSchema";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetFooter,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/sheet"
 
 
 
@@ -14,17 +27,15 @@ import { toast } from "sonner";
 
 const DashboardPage = ({notes}: {notes: Note[]}) => {
 
-      const [allNotes, setAllNotes] = useState<Note[]>([])
-  const [isLoading, setIsLoading] = useState(true);
+  const [allNotes, setAllNotes] = useState<Note[]>(notes)
+  // const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false)
-
-  useEffect(()=>{
-    setIsLoading(true)
-    setAllNotes(notes)
-    setIsLoading(false)
-  }, [notes])
-
-  
+  const [isEditing, setIsEditing] = useState(false)
+  const [updatedNote, setUpdatedNote] = useState({
+    title: "",
+    content: "",
+  })
+  const router = useRouter()
 
 
 
@@ -35,6 +46,7 @@ const DashboardPage = ({notes}: {notes: Note[]}) => {
       if(response.data.success){
         toast.success(response.data.message)
         setAllNotes(allNotes.filter((note)=> note._id !== noteId))
+        router.refresh()
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -44,85 +56,23 @@ const DashboardPage = ({notes}: {notes: Note[]}) => {
     }
   }
 
+  const handleNoteEdit = async(noteId: string)=>{
+    setIsEditing(true)
+    // console.log(updatedNote);
 
-  if(isLoading){
-    return(
-      <div className="mainContainer w-screen h-screen flex justify-center items-center pt-36 md:px-20 px-5 min-h-screen bg-neutral-950 antialiased bg-grid-white/[0.02]">
-        <Loader2 className="w-4 h-4 animate-spin" />
-      </div>
-    )
+    try {
+      const response = await axios.patch(`/api/updateNote/${noteId}`, updatedNote)
+      if(response.data.success){
+        toast.success(response.data.message)
+        router.refresh()
+      }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      toast.error(error.message)
+    } finally {
+      setIsEditing(false)
+    }
   }
-
-  if(allNotes.length === 0){
-    return(
-      <div className="mainContainer w-screen h-screen flex justify-center items-center pt-36 md:px-20 px-5 min-h-screen bg-neutral-950 antialiased bg-grid-white/[0.02]">
-        <p className="text-white text-2xl font-bold">No notes found</p>
-      </div>
-    )
-  }
-
-
-  // useEffect(()=>{
-
-  //   const fetchNotes = async()=>{
-  //     setIsLoading(true);
-  
-  //     try {
-  //       if(!session || !session.user) return;
-  //       const response = await axios.get('/api/getnotes');
-  //       if(response.data.success){
-  //         setNotes(response.data.notes || []);
-  //         console.log("data fetched successfully");
-  //         toast.success(response.data.message)
-  //       }
-  //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  //     } catch (error: any) {
-  //       toast.error(error.message)
-  //       console.log("something")
-  //     }finally{
-  //       setIsLoading(false);
-  //     }
-  //   }
-
-  //   // console.log("fetching notes")
-  //   fetchNotes();
-  // }, [session])
-
-
-  // // console.log(notes?.[0]._id); 
-
-  // const handleNoteDelete = async(noteId: string)=>{
-  //   setIsDeleting(true)
-  //   try {
-  //     const response = await axios.delete(`/api/deleteNote/${noteId}`)
-  //     if(response.data.success){
-  //       toast.success(response.data.message)
-  //       setNotes(notes.filter((note)=> note._id !== noteId))
-  //     }
-  //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  //   } catch (error: any) {
-  //     toast.error(error.message)
-  //   } finally {
-  //     setIsDeleting(false)
-  //   }
-  // }
-
-
-  // if(isLoading){
-  //   return(
-  //     <div className="mainContainer w-screen h-screen flex justify-center items-center pt-36 md:px-20 px-5 min-h-screen bg-neutral-950 antialiased bg-grid-white/[0.02]">
-  //       <Loader2 className="w-4 h-4 animate-spin" />
-  //     </div>
-  //   )
-  // }
-
-  // if(notes.length === 0){
-  //   return(
-  //     <div className="mainContainer w-screen h-screen flex justify-center items-center pt-36 md:px-20 px-5 min-h-screen bg-neutral-950 antialiased bg-grid-white/[0.02]">
-  //       <p className="text-white text-2xl font-bold">No notes found</p>
-  //     </div>
-  //   )
-  // }
 
 
   return (
@@ -169,19 +119,49 @@ const DashboardPage = ({notes}: {notes: Note[]}) => {
            <div className="foot flex justify-between items-center">
           
 
-            <Button
+            {/* <Button
               variant="outline"
               className=" cursor-pointer hover:text-red-700" onClick={()=> handleNoteDelete(note._id as string)} aria-disabled={isDeleting}>
               {
                 isDeleting ? (
                   <Loader2 className="animate-spin" />
                 ) : (
-                  <FaEdit className="text-red-500" />
+                  <FaEdit className="text-blue-500" />
                 )
               }
-            </Button>
+            </Button> */}
 
-            <h1 className="text-white text-xs text-start">
+<Sheet>
+      <SheetTrigger asChild>
+        <Button variant="outline"><FaEdit className="text-blue-500" /></Button>
+      </SheetTrigger>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Edit Note</SheetTitle>
+          <SheetDescription>
+            Make changes to your note here. Click save when you&apos;re done.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="grid flex-1 auto-rows-min gap-6 px-4">
+          <div className="grid gap-3">
+            <Label htmlFor="sheet-demo-name">Title</Label>
+            <Input id="sheet-demo-name" defaultValue={note.title} onChange={(e)=> setUpdatedNote({...updatedNote, title: e.target.value})}/>
+          </div>
+          <div className="grid gap-3">
+            <Label htmlFor="sheet-demo-username">Content</Label>
+            <Input id="sheet-demo-username" defaultValue={note.content} onChange={(e)=> setUpdatedNote({...updatedNote, content: e.target.value})}/>
+          </div>
+        </div>
+        <SheetFooter>
+          <Button type="submit" onClick={()=> handleNoteEdit(note._id as string)} aria-disabled={isEditing}>Save changes</Button>
+          <SheetClose asChild>
+            <Button variant="outline">Close</Button>
+          </SheetClose>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+
+            <h1 className="text-white text-xs text-start" suppressHydrationWarning>
               Created: {
                 new Date(note.createdAt).toLocaleString()
               }
@@ -199,7 +179,6 @@ const DashboardPage = ({notes}: {notes: Note[]}) => {
 
 
       </div>
-
 
     </div>
   );
