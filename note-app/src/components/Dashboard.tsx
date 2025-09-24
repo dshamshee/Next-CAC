@@ -22,7 +22,10 @@ import {
 } from "@/components/ui/sheet"
 
 
-
+interface UpdatedNoteType {
+  title: string;
+  content: string;
+}
 
 
 const DashboardPage = ({notes}: {notes: Note[]}) => {
@@ -31,14 +34,14 @@ const DashboardPage = ({notes}: {notes: Note[]}) => {
   // const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const [updatedNote, setUpdatedNote] = useState({
+  const [updatedNote, setUpdatedNote] = useState<UpdatedNoteType>({
     title: "",
     content: "",
   })
   const router = useRouter()
 
 
-
+// Delete the Note
   const handleNoteDelete = async(noteId: string)=>{
     setIsDeleting(true)
     try {
@@ -56,15 +59,22 @@ const DashboardPage = ({notes}: {notes: Note[]}) => {
     }
   }
 
+
+  // Update the Note
   const handleNoteEdit = async(noteId: string)=>{
     setIsEditing(true)
     // console.log(updatedNote);
 
     try {
-      const response = await axios.patch(`/api/updateNote/${noteId}`, updatedNote)
+      console.log(updatedNote)
+      const response = await axios.post(`/api/updateNote/${noteId}`, {title: updatedNote.title, content: updatedNote.content})
       if(response.data.success){
         toast.success(response.data.message)
-        router.refresh()
+        setUpdatedNote({
+          title: "",
+          content: "",
+        })
+        window.location.reload();
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -119,21 +129,11 @@ const DashboardPage = ({notes}: {notes: Note[]}) => {
            <div className="foot flex justify-between items-center">
           
 
-            {/* <Button
-              variant="outline"
-              className=" cursor-pointer hover:text-red-700" onClick={()=> handleNoteDelete(note._id as string)} aria-disabled={isDeleting}>
-              {
-                isDeleting ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  <FaEdit className="text-blue-500" />
-                )
-              }
-            </Button> */}
 
 <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline"><FaEdit className="text-blue-500" /></Button>
+        {/* Edit Button is here */}
+        <Button variant="outline" onClick={()=> setUpdatedNote({...updatedNote, title: note.title, content: note.content})}><FaEdit className="text-blue-500" /></Button>
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
@@ -153,7 +153,15 @@ const DashboardPage = ({notes}: {notes: Note[]}) => {
           </div>
         </div>
         <SheetFooter>
-          <Button type="submit" onClick={()=> handleNoteEdit(note._id as string)} aria-disabled={isEditing}>Save changes</Button>
+          <Button onClick={()=> handleNoteEdit(note._id as string)} aria-disabled={isEditing}>
+            {
+              isEditing ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                "Save changes"
+              )
+            }
+          </Button>
           <SheetClose asChild>
             <Button variant="outline">Close</Button>
           </SheetClose>

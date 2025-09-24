@@ -3,16 +3,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { GetServerSessionHere } from "../../auth/[...nextauth]/options";
 import NoteModel from "@/models/Note";
 
-export async function PATCH(
+export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ noteId: string }> }
 ) {
   const noteId = (await params).noteId;
-  const { updatedNote } = await request.json();
+  const {title, content} = await request.json();
   dbConnect();
 
   try {
-    console.log("update route is called")
+    console.log(title, content)
     const session = await GetServerSessionHere();
     const user = session?.user;
     if (!session || !user) {
@@ -26,10 +26,10 @@ export async function PATCH(
     }
 
     const updatedResult = await NoteModel.findOneAndUpdate(
-        { _id: noteId, userId: user?.id as string },
+        { _id: noteId, userId: "68c84a2d977788ea37d9fce0" },
         {
-          title: updatedNote.title,
-          content: updatedNote.content,
+          title: title,
+          content: content,
         },
         {new: true}
       );
