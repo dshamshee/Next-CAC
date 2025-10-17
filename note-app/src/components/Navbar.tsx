@@ -7,11 +7,25 @@ import { Button } from "./ui/button";
 import { FaEnvelope, FaPlus } from "react-icons/fa";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { toast } from "sonner";
 
 
 export const Navbar = ({ className }: { className?: string })=>{
     const [active, setActive] = useState<string | null>(null);
     const router = useRouter();
+
+    const handleLogout = async ()=>{
+        try {
+            await signOut();
+            toast.success("Logged out successfully")
+            router.push("/login")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            console.log(error.message)
+            toast.error("Failed to logout")
+        }
+    }
 
 
     return(
@@ -35,7 +49,7 @@ export const Navbar = ({ className }: { className?: string })=>{
                 </Button>
 
                 {/* Contact Us */}
-                <Button className="w-8 h-8 cursor-pointer hover:text-red-500 font-bold" variant="outline">
+                <Button onClick={handleLogout} className="w-8 h-8 cursor-pointer hover:text-red-500 font-bold" variant="outline">
                     <LogOut className=""/>
                     {/* <p>LogOut</p> */}
                 </Button>

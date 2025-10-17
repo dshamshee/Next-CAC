@@ -5,6 +5,7 @@ import SessionWrapper from "@/providers/SessionWrapper";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Navbar } from "@/components/Navbar";
 import { Toaster } from "@/components/ui/sonner"
+import { GetServerSessionHere } from "./api/auth/[...nextauth]/options";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,11 +22,15 @@ export const metadata: Metadata = {
   description: "Next Notes is a simple note-taking app built with Next.js",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+
+  const session = await GetServerSessionHere();
+
   return (
     <SessionWrapper>
       <html lang="en" suppressHydrationWarning>
@@ -38,7 +43,9 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <Navbar />
+            {
+              session ? <Navbar /> : null
+            }
             {children}
             <Toaster />
           </ThemeProvider>
